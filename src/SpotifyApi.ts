@@ -7,6 +7,7 @@ import cacheManager from 'cache-manager'
 import fsStore from 'cache-manager-fs'
 
 let memoryCache = null
+const SPOTIFY_SECRET = process.env.SPOTIFY_SECRET
 const initCache = () =>
   new Promise((resolve, reject) => {
     memoryCache = cacheManager.caching({
@@ -21,11 +22,10 @@ const initCache = () =>
     })
   })
 
-const SECRET = 'a2bff5a86a8a4de08e0a2a37600095a5'
 const scopes = ['user-read-playback-state', 'streaming']
 
 export class SpotifyApi {
-  clientSecret = SECRET
+  clientSecret = SPOTIFY_SECRET
   clientId = '4ad79359f396409eb2366ffadb10fe8b'
   redirectUri = 'http://localhost:3000/callback'
   spotifyApi: any
