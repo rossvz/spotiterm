@@ -17,12 +17,9 @@ npm install -g spotiterm
 ```
 spotiterm
 ```
+Spotiterm should open a browser and prompt you to log in to Spotify to authenticate.
+
 
 ### Example
 
 ![example](https://i.imgur.com/yhJuVLY.png) 
-
-
-
-Spotiterm should open a browser and prompt you to log in to Spotify to authenticate.
-
