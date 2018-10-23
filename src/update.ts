@@ -11,6 +11,9 @@ export default async () => {
   }
 
   if (update) {
-    console.log(`The latest version is ${update.latest}. Please update!`)
+    console.log(`
+    The latest version is ${update.latest}. 
+    Please update by running:
+    npm install -g spotiterm`)
   }
 }
