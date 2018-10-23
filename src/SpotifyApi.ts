@@ -1,7 +1,7 @@
 import SpotifyWebApi from 'spotify-web-api-node'
 import { path } from 'ramda'
 import opn from 'opn'
-import { startServerAndListenForCode } from './app'
+import { startServerAndListenForCode } from './server'
 
 import cacheManager from 'cache-manager'
 import fsStore from 'cache-manager-fs'

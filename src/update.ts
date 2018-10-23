@@ -15,5 +15,6 @@ export default async () => {
     The latest version is ${update.latest}. 
     Please update by running:
     npm install -g spotiterm`)
+    return true
   }
 }
