@@ -3,7 +3,7 @@
     "spotiterm": "build/app.js"
   },
   "name": "spotiterm",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "build/app.js",
   "dependencies": {
