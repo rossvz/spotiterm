@@ -1,26 +1,33 @@
-import { config } from 'dotenv'
+#!/usr/bin/env node
+import { onAuth } from './auth-html-strings'
 
-config()
-
+require('dotenv').config()
 import express from 'express'
 import clear from 'clear'
-import terminalImage from 'terminal-image'
 import { SpotifyApi } from './SpotifyApi'
 import got from 'got'
+import { printToConsole } from './output'
+import qs from 'qs'
+import bodyParser from 'body-parser'
+
+let server = null
 
 export const startServerAndListenForCode = cb => {
-  let server
   const app = express()
+  app.use(bodyParser.json())
 
   app.get('/callback', async (req, res) => {
-    res.send(`
-    <script>window.close()</script>
-    `)
-    server.close()
-    cb(req.query.code)
+    res.send(onAuth)
   })
 
-  server = app.listen(3000)
+  app.post('/token', (req, res) => {
+    res.end()
+    cb(qs.parse(req.body.token))
+    server.close()
+    server = null
+  })
+
+  if (!server) server = app.listen(3000)
 }
 
 const s = new SpotifyApi()
@@ -29,15 +36,12 @@ const updateImage = () => {
   s.getCurrentInfo().then(async data => {
     if (data) {
       clear()
-      const { body } = await got(data.image, { encoding: null })
-      console.log(`
-      Track: ${data.track}
-      Artist: ${data.artist}
-      Album: ${data.album}
-      `)
-      console.log(await terminalImage.buffer(body))
+      const body = data.image
+        ? (await got(data.image, { encoding: null })).body
+        : null
+      await printToConsole(data, body)
     }
   })
 }
 
-setInterval(updateImage, 1000)
+setInterval(updateImage, 5000)
