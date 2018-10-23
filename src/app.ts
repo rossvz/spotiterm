@@ -9,9 +9,9 @@ import got from 'got'
 import { printToConsole } from './output'
 import qs from 'qs'
 import bodyParser from 'body-parser'
-
+import update from './update'
 let server = null
-
+update()
 export const startServerAndListenForCode = cb => {
   const app = express()
   app.use(bodyParser.json())
