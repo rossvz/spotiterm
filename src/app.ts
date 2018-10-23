@@ -33,6 +33,7 @@ export const startServerAndListenForCode = cb => {
 const s = new SpotifyApi()
 
 const updateImage = () => {
+  if (!s.access_token) return
   s.getCurrentInfo().then(async data => {
     if (data) {
       clear()
@@ -44,4 +45,4 @@ const updateImage = () => {
   })
 }
 
-setInterval(updateImage, 5000)
+setInterval(updateImage, 50)

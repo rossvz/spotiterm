@@ -32,7 +32,7 @@ const scopes = [
 ]
 
 export class SpotifyApi {
-  clientSecret = SPOTIFY_SECRET
+  access_token: string | null = null
   clientId = '4ad79359f396409eb2366ffadb10fe8b'
   redirectUri = 'http://localhost:3000/callback'
   spotifyApi: any
@@ -50,7 +50,10 @@ export class SpotifyApi {
 
   async attemptSetAccessToken() {
     memoryCache.get('access_token', (err, data) => {
-      if (data) return this.spotifyApi.setAccessToken(data)
+      if (data) {
+        this.access_token = data
+        return this.spotifyApi.setAccessToken(data)
+      }
       this.login()
     })
   }
@@ -72,6 +75,7 @@ export class SpotifyApi {
       try {
         const { access_token, expires_in } = results
         memoryCache.set('access_token', access_token, { ttl: expires_in })
+        this.access_token = access_token
         this.spotifyApi.setAccessToken(access_token)
       } catch (e) {
         console.error(e)
@@ -96,7 +100,7 @@ export class SpotifyApi {
       return this.currentInfo
     } catch (e) {
       if (e.statusCode && e.statusCode === 401) {
-        console.error(401)
+        this.access_token = null
         await this.attemptSetAccessToken()
         if (!isRetry) return this.getCurrentInfo(true)
       }
