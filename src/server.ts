@@ -9,13 +9,19 @@ export const startServerAndListenForCode = cb => {
   app.use(bodyParser.json())
 
   app.get('/callback', async (req, res) => {
-    res.send(onAuth)
+    // res.send(onAuth)
+    res.send(`
+    <script>window.close()</script>
+    `)
+    if (server) server.close()
+    server = null
+    cb(req.query.code)
   })
 
   app.post('/token', (req, res) => {
     res.end()
     cb(qs.parse(req.body.token))
-    server.close()
+    if (server) server.close()
     server = null
   })
 

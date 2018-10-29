@@ -2,26 +2,8 @@ import SpotifyWebApi from 'spotify-web-api-node'
 import { path } from 'ramda'
 import opn from 'opn'
 import { startServerAndListenForCode } from './server'
-
-import cacheManager from 'cache-manager'
-import fsStore from 'cache-manager-fs'
-import qs from 'qs'
-import { ImplicitAuthResults } from './types'
-let memoryCache = null
-const SPOTIFY_SECRET = process.env.SPOTIFY_SECRET
-const initCache = () =>
-  new Promise((resolve, reject) => {
-    memoryCache = cacheManager.caching({
-      store: fsStore,
-      path: 'cache',
-      ttl: 12 * 60 * 60,
-      preventfill: false,
-      reviveBuffers: false,
-      fillcallback: data => {
-        resolve()
-      }
-    })
-  })
+import { getCache, memoryCache, oneYear } from './cache'
+import { getCredentials } from './TokenApi'
 
 const scopes = [
   'user-read-playback-state',
@@ -33,17 +15,18 @@ const scopes = [
 
 export class SpotifyApi {
   access_token: string | null = null
-  clientId = '4ad79359f396409eb2366ffadb10fe8b'
+  clientId = '6bd46d7ca9d441f59b7ff6fee000b814'
   redirectUri = 'http://localhost:3000/callback'
   spotifyApi: any
   currentInfo: any
-
   constructor() {
-    this.spotifyApi = new SpotifyWebApi({
-      clientId: this.clientId,
-      redirectUri: this.redirectUri
-    })
-    initCache().then(() => {
+    getCache().then(async () => {
+      const SECRET = await getCredentials()
+      this.spotifyApi = new SpotifyWebApi({
+        clientId: this.clientId,
+        redirectUri: this.redirectUri,
+        clientSecret: SECRET
+      })
       this.attemptSetAccessToken()
     })
   }
@@ -54,40 +37,45 @@ export class SpotifyApi {
         this.access_token = data
         return this.spotifyApi.setAccessToken(data)
       }
+      this.refreshToken()
+    })
+  }
+
+  async refreshToken() {
+    memoryCache.get('refresh_token', (err, data) => {
+      if (data)
+        this.spotifyApi.refreshAccessToken(data => {
+          this.access_token = data.body.access_token
+          return this.spotifyApi.setAccesstoken(data.body.access_token)
+        })
       this.login()
     })
   }
 
-  implicitGrant() {
-    const baseUrl = `https://accounts.spotify.com/authorize?`
-    const params = qs.stringify({
-      client_id: this.clientId,
-      response_type: 'token',
-      redirect_uri: this.redirectUri,
-      scope: scopes
-    })
-    const url = `${baseUrl}${params}`
-    opn(url)
-  }
-
   login() {
-    startServerAndListenForCode(async (results: ImplicitAuthResults) => {
+    startServerAndListenForCode(async code => {
       try {
-        const { access_token, expires_in } = results
+        const data = await this.spotifyApi.authorizationCodeGrant(code)
+        const { access_token, expires_in, refresh_token } = data.body
         memoryCache.set('access_token', access_token, { ttl: expires_in })
+        memoryCache.set('refresh_token', refresh_token, {
+          ttl: oneYear()
+        })
         this.access_token = access_token
         this.spotifyApi.setAccessToken(access_token)
+        this.spotifyApi.setRefreshToken(access_token)
       } catch (e) {
         console.error(e)
       }
     })
-    this.implicitGrant()
+    opn(this.spotifyApi.createAuthorizeURL(scopes))
   }
 
   async getCurrentInfo(isRetry = false) {
     try {
       const info = await this.spotifyApi.getMyCurrentPlaybackState({})
       const newInfo = {
+        isPlaying: path(['body', 'is_playing'], info),
         image: path(['body', 'item', 'album', 'images', '0', 'url'], info),
         album: path(['body', 'item', 'album', 'name'], info),
         artist: path(['body', 'item', 'artists', '0', 'name'], info),

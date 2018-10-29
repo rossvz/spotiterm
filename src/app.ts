@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import checkUpdate from './update'
 import { updateImage } from './updateImage'
-
-checkUpdate().then(hasUpdate => {
+checkUpdate().then(async hasUpdate => {
   if (hasUpdate) return
-  setInterval(updateImage, 50)
+  setTimeout(updateImage, 1000)
+  setInterval(updateImage, 3000)
 })
