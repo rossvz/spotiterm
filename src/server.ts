@@ -9,7 +9,6 @@ export const startServerAndListenForCode = cb => {
   app.use(bodyParser.json())
 
   app.get('/callback', async (req, res) => {
-    // res.send(onAuth)
     res.send(`
     <script>window.close()</script>
     `)

@@ -2,7 +2,7 @@ import terminalImage from 'terminal-image'
 import center from 'center-align'
 import termSize from 'term-size'
 import clear from 'clear'
-
+import figlet from 'figlet'
 const isITerm = () => process.env.TERM_PROGRAM === 'iTerm.app'
 
 const emptyLine = () => new Array(termSize().columns).fill(' ').join('')
@@ -22,4 +22,19 @@ export async function printToConsole(data, body: any) {
   console.log(maybePad(image))
 }
 
-export const printPendingMessage = () => console.log(`\nNo tracks playing`)
+export const printPendingMessage = () => {
+  clear()
+  figlet.text(
+    'Spotiterm',
+    {
+      font: 'Slant'
+    },
+    (err, data) => {
+      if (err) {
+        return
+      }
+      console.log(data)
+      console.log(`\n -- Paused --`)
+    }
+  )
+}

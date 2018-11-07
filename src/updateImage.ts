@@ -8,7 +8,7 @@ export const updateImage = async () => {
   if (!s.access_token) return
   const data = await s.getCurrentInfo()
   if (data) {
-    if (!data.isPlaying) await printPendingMessage()
+    if (!data.isPlaying) return printPendingMessage()
     else {
       const body = data.image
         ? (await got(data.image, { encoding: null })).body

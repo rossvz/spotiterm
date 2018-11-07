@@ -42,13 +42,19 @@ export class SpotifyApi {
   }
 
   async refreshToken() {
-    memoryCache.get('refresh_token', (err, data) => {
-      if (data)
-        this.spotifyApi.refreshAccessToken(data => {
-          this.access_token = data.body.access_token
-          return this.spotifyApi.setAccesstoken(data.body.access_token)
-        })
-      this.login()
+    memoryCache.get('refresh_token', async (err, data) => {
+      if (data) {
+        try {
+          this.spotifyApi.setRefreshToken(data)
+          const access_token = await this.spotifyApi.refreshAccessToken()
+          this.access_token = access_token
+          return this.spotifyApi.setAccessToken(access_token)
+        } catch (e) {
+          return this.login()
+        }
+      } else {
+        this.login()
+      }
     })
   }
 
@@ -66,6 +72,7 @@ export class SpotifyApi {
         this.spotifyApi.setRefreshToken(access_token)
       } catch (e) {
         console.error(e)
+        memoryCache.del('refresh_token')
       }
     })
     opn(this.spotifyApi.createAuthorizeURL(scopes))
@@ -81,9 +88,7 @@ export class SpotifyApi {
         artist: path(['body', 'item', 'artists', '0', 'name'], info),
         track: path(['body', 'item', 'name'], info)
       }
-      if (this.currentInfo) {
-        if (newInfo.track === this.currentInfo.track) return null
-      }
+      if (this.currentInfo === newInfo) return null
       this.currentInfo = newInfo
       return this.currentInfo
     } catch (e) {
