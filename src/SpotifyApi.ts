@@ -46,9 +46,9 @@ export class SpotifyApi {
       if (data) {
         try {
           this.spotifyApi.setRefreshToken(data)
-          const access_token = await this.spotifyApi.refreshAccessToken()
-          this.access_token = access_token
-          return this.spotifyApi.setAccessToken(access_token)
+          const { body } = await this.spotifyApi.refreshAccessToken()
+          this.access_token = body.access_token
+          return this.spotifyApi.setAccessToken(body.access_token)
         } catch (e) {
           return this.login()
         }
