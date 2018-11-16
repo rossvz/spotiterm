@@ -1,5 +1,5 @@
 import SpotifyWebApi from 'spotify-web-api-node'
-import { path } from 'ramda'
+import { path, equals } from 'ramda'
 import opn from 'opn'
 import { startServerAndListenForCode } from './server'
 import { getCache, memoryCache, oneYear } from './cache'
@@ -88,7 +88,7 @@ export class SpotifyApi {
         artist: path(['body', 'item', 'artists', '0', 'name'], info),
         track: path(['body', 'item', 'name'], info)
       }
-      if (this.currentInfo === newInfo) return null
+      if (equals(this.currentInfo, newInfo)) return null
       this.currentInfo = newInfo
       return this.currentInfo
     } catch (e) {
