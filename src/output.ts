@@ -3,9 +3,9 @@ import center from 'center-align'
 import termSize from 'term-size'
 import clear from 'clear'
 import figlet from 'figlet'
+
 const isITerm = () => process.env.TERM_PROGRAM === 'iTerm.app'
 
-const emptyLine = () => new Array(termSize().columns).fill(' ').join('')
 const pad = new Array(Math.round(termSize().columns / 4) + 2).fill(' ').join('')
 
 const maybeCenter = (str, col) => (isITerm() ? center(str, col) : str)

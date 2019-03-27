@@ -1,4 +1,3 @@
-import { onAuth } from './auth-html-strings'
 import express from 'express'
 import bodyParser from 'body-parser'
 import qs from 'qs'

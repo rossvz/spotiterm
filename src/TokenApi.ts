@@ -1,7 +1,9 @@
 import axios from 'axios'
+import os from 'os'
+import { machineId } from 'node-machine-id'
 import { getCache, oneYear } from './cache'
-const BASE_URL = 'https://guarded-badlands-11018.herokuapp.com'
-import prompt from 'prompt-async'
+import Cryptr from 'cryptr'
+const BASE_URL = 'https://spotiterm-token-server.herokuapp.com'
 
 export const getCredentials = async () =>
   new Promise(async (resolve, reject) => {
@@ -10,10 +12,12 @@ export const getCredentials = async () =>
       memory.get('spotiterm_secret', async (err, data) => {
         if (data) resolve(data)
         else {
-          const email = await promptEmail()
-          const { data: secret } = await axios.get(
-            `${BASE_URL}/credentials?client=6bd46d7ca9d441f59b7ff6fee000b814&email=${email}`
-          )
+          const { username, id } = await getUser()
+          const { data: response } = await axios.post(`${BASE_URL}/login`, {
+            username,
+            machineId: id
+          })
+          const secret = new Cryptr(id).decrypt(response.meta)
           memory.set('spotiterm_secret', secret, { ttl: oneYear() })
           resolve(secret)
         }
@@ -23,16 +27,8 @@ export const getCredentials = async () =>
     }
   })
 
-const promptEmail = async () => {
-  prompt.message = `Welcome to Spotiterm!`
-  prompt.delimiter = `\n`
-  prompt.start()
-  const { email } = await prompt.get({
-    properties: {
-      email: {
-        description: `What's your email address?`
-      }
-    }
-  })
-  return email
+const getUser = async () => {
+  const { username } = os.userInfo()
+  const id = await machineId()
+  return { username, id }
 }
