@@ -1,8 +1,8 @@
-import terminalImage from 'terminal-image'
 import center from 'center-align'
-import termSize from 'term-size'
-import clear from 'clear'
+import clear from 'console-clear'
 import figlet from 'figlet'
+import termSize from 'term-size'
+import terminalImage from 'terminal-image'
 
 const isITerm = () => process.env.TERM_PROGRAM === 'iTerm.app'
 
